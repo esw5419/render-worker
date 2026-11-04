@@ -11,7 +11,9 @@ const {encryptFile} = require('./crypt.cjs');
   const part = JSON.parse(process.env.PART);
   const jobDir = path.resolve(process.env.JOB_DIR), outDir = path.resolve(process.env.OUT_DIR);
   const serveUrl = path.join(jobDir, 'bundle');
-  const name = part.audio ? 'full-timeline-audio.wav' : `chunk-${String(part.index).padStart(4, '0')}.mp4`;
+  // 오디오 구간(part.audio + startFrame)은 audio-####.wav로 받아 로컬이 전체 WAV로 이어 붙인다.
+  const audioRange = part.audio && Number.isInteger(part.startFrame);
+  const name = audioRange ? `audio-${String(part.index).padStart(4, '0')}.wav` : part.audio ? 'full-timeline-audio.wav' : `chunk-${String(part.index).padStart(4, '0')}.mp4`;
   const plain = path.join(os.tmpdir(), name);
   const inputProps = JSON.parse(fs.readFileSync(path.join(jobDir, 'props.json'), 'utf8'));
   const composition = await selectComposition({serveUrl, id: 'SugaReferenceShort', inputProps});
@@ -21,7 +23,7 @@ const {encryptFile} = require('./crypt.cjs');
   if (part.audio) {
     // 4코어 러너에서 전체 WAV(6975프레임)는 약 7분으로 이 렌더의 병목이다. 2026-11-04 시험: concurrency 4는 delayRender 28초 초과로 실패,
     // 2(대기 120초)는 453초로 1(463초)과 차이가 없고 WAV 바이트가 같았다. Modal과 같은 1을 쓴다.
-    await renderMedia({...common, codec: 'wav', sampleRate: 48000, concurrency: 1});
+    await renderMedia({...common, codec: 'wav', sampleRate: 48000, concurrency: 1, ...(audioRange ? {frameRange: [part.startFrame, part.endFrame]} : {})});
   } else {
     await renderMedia({...common, codec: 'h264', crf: 18, muted: true, imageFormat: 'jpeg', frameRange: [part.startFrame, part.endFrame],
       concurrency: Number(process.env.RENDER_CONCURRENCY || os.cpus().length)});
