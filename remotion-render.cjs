@@ -19,9 +19,9 @@ const {encryptFile} = require('./crypt.cjs');
     offthreadVideoCacheSizeInBytes: 1024 * 1024 * 1024, chromiumOptions: {gl: 'swangle'}};
   const t0 = Date.now();
   if (part.audio) {
-    // concurrency 1이면 4코어 러너에서 전체 WAV가 약 7분이다. 4로 올리면 무거운 프레임에서 delayRender 28초 초과로 실패해(2026-11-04)
-    // 2개 + 대기 120초로 둔다.
-    await renderMedia({...common, codec: 'wav', sampleRate: 48000, concurrency: Number(process.env.AUDIO_CONCURRENCY || 2), timeoutInMilliseconds: 120000});
+    // 4코어 러너에서 전체 WAV(6975프레임)는 약 7분으로 이 렌더의 병목이다. 2026-11-04 시험: concurrency 4는 delayRender 28초 초과로 실패,
+    // 2(대기 120초)는 453초로 1(463초)과 차이가 없고 WAV 바이트가 같았다. Modal과 같은 1을 쓴다.
+    await renderMedia({...common, codec: 'wav', sampleRate: 48000, concurrency: 1});
   } else {
     await renderMedia({...common, codec: 'h264', crf: 18, muted: true, imageFormat: 'jpeg', frameRange: [part.startFrame, part.endFrame],
       concurrency: Number(process.env.RENDER_CONCURRENCY || os.cpus().length)});
