@@ -19,7 +19,8 @@ const {encryptFile} = require('./crypt.cjs');
     offthreadVideoCacheSizeInBytes: 1024 * 1024 * 1024, chromiumOptions: {gl: 'swangle'}};
   const t0 = Date.now();
   if (part.audio) {
-    await renderMedia({...common, codec: 'wav', sampleRate: 48000, concurrency: 1});
+    // Modal은 concurrency 1이었으나 4코어 러너에서 7분이 걸려 코어 수로 올린다(2026-11-04, 결과 WAV 바이트 일치 확인).
+    await renderMedia({...common, codec: 'wav', sampleRate: 48000, concurrency: Number(process.env.AUDIO_CONCURRENCY || os.cpus().length)});
   } else {
     await renderMedia({...common, codec: 'h264', crf: 18, muted: true, imageFormat: 'jpeg', frameRange: [part.startFrame, part.endFrame],
       concurrency: Number(process.env.RENDER_CONCURRENCY || os.cpus().length)});
