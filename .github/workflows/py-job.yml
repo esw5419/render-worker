@@ -29,12 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: "3.12", cache: pip, cache-dependency-path: py-requirements.txt}
+        with: {python-version: "3.12", cache: pip, cache-dependency-path: "py-requirements*.txt"}
       - name: System packages
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends ffmpeg fluidsynth fluid-soundfont-gm fonts-noto-cjk >/dev/null
           pip install -q -r py-requirements.txt
+          if [ -n "${{ inputs.whisper }}" ]; then pip install -q -r py-requirements-whisper.txt; fi
       - uses: actions/cache@v4
         if: inputs.whisper != ''
         with:
@@ -61,7 +62,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RENDER_KEY: ${{ secrets.RENDER_KEY }}
-          ASSET_ID: ${{ inputs.asset_id }}
+          ASSET_ID: ${{ matrix.part.asset_id || inputs.asset_id }}  # part마다 자기 입력이 있으면 그것만 받는다
         run: |
           curl -fsSL --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
             -o "$RUNNER_TEMP/in.enc" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/assets/$ASSET_ID"
