@@ -35,7 +35,7 @@ jobs:
         run: |
           # apt 미러가 가끔 1시간 넘게 멈춘다(2026-11-05 두 번) → 단계마다 시간 제한을 두고 3번까지 다시
           for i in 1 2 3; do
-            timeout 180 sudo apt-get update -qq && timeout 420 sudo apt-get install -y -qq --no-install-recommends ffmpeg fluidsynth fluid-soundfont-gm fonts-noto-cjk >/dev/null && break
+            timeout 180 sudo apt-get -o Acquire::http::Timeout=20 -o Acquire::Retries=5 update -qq && timeout 420 sudo apt-get -o Acquire::http::Timeout=20 -o Acquire::Retries=5 install -y -qq --no-install-recommends ffmpeg fluidsynth fluid-soundfont-gm fonts-noto-cjk >/dev/null && break
             [ $i = 3 ] && exit 1; echo "apt retry $i"; sleep 10
           done
           pip install -q -r py-requirements.txt
