@@ -12,7 +12,7 @@ on:
       parts: {description: JSON array of parts, required: true, type: string}
       blender: {description: blender version or empty, required: false, type: string, default: ""}
       whisper: {description: "1 to cache faster-whisper models", required: false, type: string, default: ""}
-      apt: {description: "1 to apt-install ffmpeg·fluidsynth·CJK fonts (empty = skip)", required: false, type: string, default: "1"}
+      apt: {description: "1 to apt-install ffmpeg·fluidsynth·CJK fonts (empty = skip; GitHub turns an empty value into the default, so the default must be empty)", required: false, type: string, default: ""}
 
 permissions:
   contents: write
