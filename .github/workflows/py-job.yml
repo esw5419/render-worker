@@ -31,6 +31,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12", cache: pip, cache-dependency-path: "py-requirements*.txt"}
       - name: System packages
+        timeout-minutes: 15
         run: |
           # apt 미러가 가끔 1시간 넘게 멈춘다(2026-11-05 두 번) → 단계마다 시간 제한을 두고 3번까지 다시
           for i in 1 2 3; do
